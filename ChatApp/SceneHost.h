@@ -55,6 +55,8 @@ private:
 	void Disconnect();
 	void End();
 
+	void SetAcceptGuestStep(AcceptGuestStep Step);
+
 private:
 	// 承認・拒否を選択するときにだけ表示する部品
 	std::vector<ScreenComponent*> m_AcceptRejectComponent;

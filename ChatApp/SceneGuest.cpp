@@ -195,7 +195,7 @@ Scene* SceneGuest::Update()
 					// 受け取ったホスト名を保持
 					m_HostName->ChangeText(Msg.string.text);
 					// 接続段階へ処理を進む
-					m_ConnectStep = ConnectStep::ON;
+					SetConnectStep(ConnectStep::ON);
 				}
 				else
 				{
@@ -205,7 +205,7 @@ Scene* SceneGuest::Update()
 					// 切断する
 					Disconnect();
 					// 未接続段階へ処理を戻る
-					m_ConnectStep = ConnectStep::OFF;
+					SetConnectStep(ConnectStep::OFF);
 				}
 			}
 			else
@@ -214,10 +214,8 @@ Scene* SceneGuest::Update()
 				// 切断する
 				Disconnect();
 				// 未接続段階へ処理を戻る
-				m_ConnectStep = ConnectStep::OFF;
+				SetConnectStep(ConnectStep::OFF);
 			}
-			// 接続段階を表示するテキストに反映する
-			m_ConnectState->ChangeText(CONNECT_STEP_STATE[static_cast<int>(m_ConnectStep)]);
 		}
 	}
 	break;
@@ -239,8 +237,7 @@ Scene* SceneGuest::Update()
 				{
 					// 切断しましょうメッセージだったとき
 					Disconnect();
-					m_ConnectStep = ConnectStep::OFF;
-					m_ConnectState->ChangeText(CONNECT_STEP_STATE[static_cast<int>(m_ConnectStep)]);
+					SetConnectStep(ConnectStep::OFF);
 				}
 			}
 			break;
@@ -395,7 +392,7 @@ void SceneGuest::TryConnect()
 			LOG_INFO("接続失敗");
 
 			// 接続失敗したらOFFのまま（一応代入）
-			m_ConnectStep = ConnectStep::OFF;
+			SetConnectStep(ConnectStep::OFF);
 		}
 		else
 		{
@@ -407,10 +404,8 @@ void SceneGuest::TryConnect()
 			Command::Send(m_NetHandle, msgSend);
 
 			// 承認待ち段階へ処理を進む
-			m_ConnectStep = ConnectStep::WAIT_ACCEPT;
+			SetConnectStep(ConnectStep::WAIT_ACCEPT);
 		}
-		// 段階の変化を表示するテキストに反映
-		m_ConnectState->ChangeText(CONNECT_STEP_STATE[static_cast<int>(m_ConnectStep)]);
 	}
 }
 
@@ -449,6 +444,16 @@ void SceneGuest::End()
 		Disconnect();
 		m_Next = SceneCreator::Create(SceneCreator::Name::CHOICE_HOST_GUEST);
 	}
+}
+
+/*
+ * m_ConnectStepを変更したらm_ConnectStateも変更する必要があるので
+ * m_ConnectStepを変更するときは必ずこの関数で行う
+ */
+void SceneGuest::SetConnectStep(ConnectStep Step)
+{
+	m_ConnectStep = Step;
+	m_ConnectState->ChangeText(CONNECT_STEP_STATE[static_cast<int>(m_ConnectStep)]);
 }
 
 

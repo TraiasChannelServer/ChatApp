@@ -212,7 +212,7 @@ void SceneHost::ProcessNewGuest()
 				// 相手のIPを保持
 				m_NewGuestIP->ChangeText(Common::IP2String(ip));
 				// 処理をAcceptGuestStep::REQUEST_NAMEへ進む
-				m_AcceptGuestStep = AcceptGuestStep::REQUEST_NAME;
+				SetAcceptGuestStep(AcceptGuestStep::REQUEST_NAME);
 				m_RequestNameTimeStart = GetNowCount();
 			}
 			else
@@ -246,7 +246,7 @@ void SceneHost::ProcessNewGuest()
 				// 相手の名前を保持
 				m_NewGuestName->ChangeText(Msg.string.text);
 				// 処理をAcceptGuestStep::SELECT_ACCEPT_REJECTへ進む
-				m_AcceptGuestStep = AcceptGuestStep::SELECT_ACCEPT_REJECT;
+				SetAcceptGuestStep(AcceptGuestStep::SELECT_ACCEPT_REJECT);
 			}
 			else
 			{
@@ -282,7 +282,7 @@ void SceneHost::ProcessNewGuest()
 			Command::Send(m_NewGuestNetHandle, msgSend);
 
 			// 処理をAcceptGuestStep::WAIT_CONNECTへ戻る
-			m_AcceptGuestStep = AcceptGuestStep::WAIT_CONNECT;
+			SetAcceptGuestStep(AcceptGuestStep::WAIT_CONNECT);
 		}
 	}
 	break;
@@ -348,7 +348,7 @@ void SceneHost::ProcessNewGuest()
 			Command::Send(m_NewGuestNetHandle, msgSend);
 		}
 		// 処理をAcceptGuestStep::WAIT_CONNECTへ戻る
-		m_AcceptGuestStep = AcceptGuestStep::WAIT_CONNECT;
+		SetAcceptGuestStep(AcceptGuestStep::WAIT_CONNECT);
 		break;
 	}
 }
@@ -503,22 +503,19 @@ void SceneHost::SetAcceptGuest(bool& OffOn)
 	{
 		// OFFのときはいつでもONにしてOK
 		if (OffOn == true)
-			m_AcceptGuestStep = AcceptGuestStep::WAIT_CONNECT;
+			SetAcceptGuestStep(AcceptGuestStep::WAIT_CONNECT);
 	}
 	else if (m_AcceptGuestStep == AcceptGuestStep::WAIT_CONNECT)
 	{
 		// 新規ゲストが接続を試みていないときはOFFにしてOK
 		if (OffOn == false)
-			m_AcceptGuestStep = AcceptGuestStep::OFF;
+			SetAcceptGuestStep(AcceptGuestStep::OFF);
 	}
 	else
 	{
 		// 新規ゲストが接続を試みているときはONしか許さない
 		OffOn = true;
 	}
-
-	// m_AcceptGuestStepの段階がどの状態かを表すラベルにも変更を反映
-	m_AcceptState->ChangeText(ACCEPT_STEP_STATE[static_cast<int>(m_AcceptGuestStep)]);
 
 	// DxLibの接続受付状態の変更
 	if (OffOn)
@@ -539,12 +536,11 @@ void SceneHost::AcceptGuest()
 	{
 		// 承認フラグを立てて次の段階に進む
 		m_AcceptOrReject = true;
-		m_AcceptGuestStep = AcceptGuestStep::SELECTED;
-		m_AcceptState->ChangeText(ACCEPT_STEP_STATE[static_cast<int>(m_AcceptGuestStep)]);
+		SetAcceptGuestStep(AcceptGuestStep::SELECTED);
 	}
 	else
 	{
-		LOG_WARN("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
+		LOG_ERROR("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
 	}
 }
 
@@ -558,13 +554,22 @@ void SceneHost::RejectGuest()
 	{
 		// 拒否フラグを立てて次の段階に進む
 		m_AcceptOrReject = false;
-		m_AcceptGuestStep = AcceptGuestStep::SELECTED;
-		m_AcceptState->ChangeText(ACCEPT_STEP_STATE[static_cast<int>(m_AcceptGuestStep)]);
+		SetAcceptGuestStep(AcceptGuestStep::SELECTED);
 	}
 	else
 	{
-		LOG_WARN("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
+		LOG_ERROR("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
 	}
+}
+
+/*
+ * m_AcceptGuestStepを変更したらm_AcceptStateも変更する必要があるので
+ * m_AcceptGuestStepを変更するときは必ずこの関数で行う
+ */
+void SceneHost::SetAcceptGuestStep(AcceptGuestStep Step)
+{
+	m_AcceptGuestStep = Step;
+	m_AcceptState->ChangeText(ACCEPT_STEP_STATE[static_cast<int>(m_AcceptGuestStep)]);
 }
 
 void SceneHost::Disconnect()

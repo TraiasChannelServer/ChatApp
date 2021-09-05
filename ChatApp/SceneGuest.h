@@ -44,6 +44,8 @@ private:
 	void RequestAllUpdate();
 	void End();
 
+	void SetConnectStep(ConnectStep Step);
+
 private:
 	Scene* m_Next;
 
