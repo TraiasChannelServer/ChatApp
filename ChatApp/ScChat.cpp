@@ -75,7 +75,7 @@ void ScChat::AddLine(int ID, const std::string& Name, const std::string& Text)
 
 void ScChat::ChangeName(int ID, const std::string& Name)
 {
-	LOG_INFO("チャットのHeadの変更：ID = %s, Name = %s", ID, Name.c_str());
+	LOG_INFO("チャットのHeadの変更：ID = %d, Name = %s", ID, Name.c_str());
 
 	for (auto& line : m_Lines)
 	{
