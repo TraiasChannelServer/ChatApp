@@ -432,11 +432,11 @@ void SceneHost::ProcessReceiveCommand()
 	{
 		int ID = pair.first;
 
-		Command::ReceiveResult result = Command::CheckReceive(m_NewGuestNetHandle);
+		Command::ReceiveResult result = Command::CheckReceive(ID);
 		if (result == Command::ReceiveResult::SUCCESS)
 		{
 			// 相手からメッセージが送られてきたら
-			Command::Message Msg = Command::Receive(m_NewGuestNetHandle);
+			Command::Message Msg = Command::Receive(ID);
 
 			switch (Msg.type)
 			{
