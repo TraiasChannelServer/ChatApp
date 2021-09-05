@@ -25,10 +25,10 @@ Command::Message Command::MakeConnect(bool AcceptReject, const std::string& Name
  * @param ID            チャットメッセージの送信者のID
  * @param MessageString チャットメッセージ
  */
-Command::Message Command::MakeMessage(int ID, const std::string& MessageString)
+Command::Message Command::MakeChatText(int ID, const std::string& MessageString)
 {
 	Message msg = {};
-	msg.type = Type::MESSAGE;
+	msg.type = Type::CHAT_TEXT;
 	msg.single.num = ID;
 	memcpy_s(msg.string.text, sizeof(msg.string.text), MessageString.c_str(), MessageString.size());
 	return msg;
@@ -162,8 +162,8 @@ const char* Command::TypeToString(Type type)
 	{
 	case Type::CONNECT:
 		return "Command::Type::CONNECT";
-	case Type::MESSAGE:
-		return "Command::Type::MESSAGE";
+	case Type::CHAT_TEXT:
+		return "Command::Type::CHAT_TEXT";
 	case Type::CHANGE_NAME_MYSELF:
 		return "Command::Type::CHANGE_NAME_MYSELF";
 	case Type::CHANGE_NAME_GUEST:

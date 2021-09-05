@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "ScLabel.h"
 #include "ScList.h"
+#include "ScChat.h"
 #include <string>
 
 class SceneGuest : public Scene
@@ -42,6 +43,8 @@ private:
 	void TryConnect();
 	void Disconnect();
 	void RequestAllUpdate();
+	void SetChatText(std::string& Text);
+	void SendChatText();
 	void End();
 
 	void SetConnectStep(ConnectStep Step);
@@ -68,4 +71,7 @@ private:
 
 	// 同じホストに接続しているゲスト達を所持する画面部品
 	ScList* m_ConnectingGuest;
+
+	ScChat* m_Chat;
+	std::string m_ChatText;
 };

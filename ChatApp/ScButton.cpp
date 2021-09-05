@@ -36,7 +36,10 @@ void ScButton::OnMouseMove(int x, int y)
 
 	if (m_Hover && m_PressCount > 0)
 	{
-		(*m_Callback)();
+		if (m_Callback)
+		{
+			(*m_Callback)();
+		}
 	}
 
 	m_PressCount = 0;

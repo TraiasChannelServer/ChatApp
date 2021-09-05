@@ -27,7 +27,7 @@ void ScEdit::OnMouseMove(int x, int y)
 
 	if (m_Hover && m_PressCount > 0)
 	{
-		KeyInputter::Inst().Start(this, m_TextX, m_TextY, m_TextSize);
+		KeyInputter::Inst().Start(this, m_TextX, m_TextY, m_TextSize, m_Text);
 	}
 
 	if (KeyInputter::Inst().IsStateFinish(this))

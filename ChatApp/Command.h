@@ -15,19 +15,12 @@ public:
 	enum class Type
 	{
 		CONNECT,
-		MESSAGE,
+		CHAT_TEXT,
 		CHANGE_NAME_MYSELF,
 		CHANGE_NAME_GUEST,
 		NEW_GUEST,
 		DISCONNECT_GUEST,
 		ALL_UPDATE,
-	};
-
-	enum class ReceiveResult
-	{
-		NONE,
-		SUCCESS,
-		ABNORMAL
 	};
 
 	union SingleData
@@ -48,12 +41,19 @@ public:
 		StringData string;
 	};
 	
+	enum class ReceiveResult
+	{
+		NONE,
+		SUCCESS,
+		ABNORMAL
+	};
+
 	// メッセージの長さは固定長
 	static constexpr int SIZEOF_MESSAGE = sizeof(Message);
 
 public:
 	static Message MakeConnect(bool AcceptReject, const std::string& Name);
-	static Message MakeMessage(int ID, const std::string& MessageString);
+	static Message MakeChatText(int ID, const std::string& MessageString);
 	static Message MakeChangeNameMySelf(const std::string& Name);
 	static Message MakeChangeNameGuest(int ID, const std::string& Name);
 	static Message MakeNewGuest(int ID, const std::string& Name);

@@ -39,9 +39,6 @@
     <ClCompile Include="SceneHost.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="FontManager.cpp">
-      <Filter>Screen</Filter>
-    </ClCompile>
     <ClCompile Include="SceneCreator.cpp">
       <Filter>Screen</Filter>
     </ClCompile>
@@ -81,6 +78,12 @@
     <ClCompile Include="DataFileInOut.cpp">
       <Filter>DataFile</Filter>
     </ClCompile>
+    <ClCompile Include="FontManager.cpp">
+      <Filter>Main Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScChat.cpp">
+      <Filter>Screen\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bound.h">
@@ -106,9 +109,6 @@
     </ClInclude>
     <ClInclude Include="SceneHost.h">
       <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="FontManager.h">
-      <Filter>Screen</Filter>
     </ClInclude>
     <ClInclude Include="SceneCreator.h">
       <Filter>Screen</Filter>
@@ -157,6 +157,12 @@
     </ClInclude>
     <ClInclude Include="DataFileInOut.h">
       <Filter>DataFile</Filter>
+    </ClInclude>
+    <ClInclude Include="FontManager.h">
+      <Filter>Main Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScChat.h">
+      <Filter>Screen\Component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

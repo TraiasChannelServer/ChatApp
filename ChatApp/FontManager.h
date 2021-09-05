@@ -13,6 +13,7 @@ class FontManager
 public:
 	enum class Type
 	{
+		TINY,
 		SMALL,
 		MIDDLE,
 		BIG,

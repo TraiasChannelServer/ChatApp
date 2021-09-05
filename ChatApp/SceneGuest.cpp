@@ -26,10 +26,13 @@ SceneGuest::SceneGuest()
 	, m_NetHandle()
 	, m_HostName()
 	, m_ConnectingGuest()
+	, m_Chat()
+	, m_ChatText()
 {
 	// コンストラクタでは画面の部品を配置する
 	LOG_INFO("ゲスト画面生成");
 
+	int TinyFont = FontManager::Inst().GetFontHandle(FontManager::Type::TINY);
 	int SmallFont = FontManager::Inst().GetFontHandle(FontManager::Type::SMALL);
 	int MiddleFont = FontManager::Inst().GetFontHandle(FontManager::Type::MIDDLE);
 	int BigFont = FontManager::Inst().GetFontHandle(FontManager::Type::BIG);
@@ -58,24 +61,31 @@ SceneGuest::SceneGuest()
 	y += Y_STEP_SMALL;
 	AddBaseComponent(new ScLabel("IP：", GreenColor, 10, y, SmallFont));
 	{
-		BoundRect* bound = new BoundRect(X_POS, y, 60, Y_SIZE);
-		auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP1);
-		AddBaseComponent(new ScEdit(std::to_string(m_IP.d1), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
-	}
-	{
-		BoundRect* bound = new BoundRect(X_POS + 60, y, 60, Y_SIZE);
-		auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP2);
-		AddBaseComponent(new ScEdit(std::to_string(m_IP.d2), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
-	}
-	{
-		BoundRect* bound = new BoundRect(X_POS + 120, y, 60, Y_SIZE);
-		auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP3);
-		AddBaseComponent(new ScEdit(std::to_string(m_IP.d3), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
-	}
-	{
-		BoundRect* bound = new BoundRect(X_POS + 180, y, 60, Y_SIZE);
-		auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP4);
-		AddBaseComponent(new ScEdit(std::to_string(m_IP.d4), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
+		static constexpr int IP_X_SIZE = 56;
+		int x = X_POS;
+		{
+			BoundRect* bound = new BoundRect(x, y, IP_X_SIZE, Y_SIZE);
+			auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP1);
+			AddBaseComponent(new ScEdit(std::to_string(m_IP.d1), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
+		}
+		x += IP_X_SIZE;
+		{
+			BoundRect* bound = new BoundRect(x, y, IP_X_SIZE, Y_SIZE);
+			auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP2);
+			AddBaseComponent(new ScEdit(std::to_string(m_IP.d2), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
+		}
+		x += IP_X_SIZE;
+		{
+			BoundRect* bound = new BoundRect(x, y, IP_X_SIZE, Y_SIZE);
+			auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP3);
+			AddBaseComponent(new ScEdit(std::to_string(m_IP.d3), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
+		}
+		x += IP_X_SIZE;
+		{
+			BoundRect* bound = new BoundRect(x, y, IP_X_SIZE, Y_SIZE);
+			auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetIP4);
+			AddBaseComponent(new ScEdit(std::to_string(m_IP.d4), EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 3, Callback));
+		}
 	}
 
 	y += Y_STEP_SMALL;
@@ -131,6 +141,38 @@ SceneGuest::SceneGuest()
 		BoundRect* bound = new BoundRect(X_START + 10, y, 250, Y_SIZE);
 		m_ConnectingGuest = new ScList(ColorFore, ColorBack, bound, TextAlignment::Gravity::LEFT, SmallFont, ColorFrame);
 		AddBaseComponent(m_ConnectingGuest);
+	}
+
+	{
+		static constexpr int DELTA_WIDTH = 120;
+		unsigned int ColorHead = GetColor(0, 200, 0);
+		unsigned int ColorBody = GetColor(255, 255, 255);
+		unsigned int ColorFrame = GetColor(150, 180, 180);
+		int XPos = Common::WINDOW_X_SIZE / 2 - DELTA_WIDTH;
+		int YPos = 20;
+		int XSize = Common::WINDOW_X_SIZE / 2 + DELTA_WIDTH - 20;
+		int YSize = Common::WINDOW_Y_SIZE - 40 - Y_STEP_MIDDLE;
+		{
+			// チャット枠
+			BoundRect* bound = new BoundRect(XPos, YPos, XSize, YSize);
+			m_Chat = new ScChat(bound, TinyFont, SmallFont, ColorHead, ColorBody, ColorFrame);
+			AddBaseComponent(m_Chat);
+		}
+		{
+			// チャット入力枠
+			BoundRect* bound = new BoundRect(XPos, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, XSize, Y_SIZE);
+			auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetChatText);
+			AddBaseComponent(new ScEdit(m_ChatText, EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 64, Callback));
+		}
+		{
+			unsigned int ColorFore = BlackColor;
+			unsigned int ColorBack = GetColor(180, 220, 220);
+			unsigned int ColorFrame = GetColor(50, 100, 100);
+			unsigned int ColorBackHover = GetColor(200, 240, 240);
+			unsigned int ColorBackPress = GetColor(160, 200, 200);
+			auto Callback = new DelegateVoid<SceneGuest>(*this, &SceneGuest::SendChatText);
+			AddBaseComponent(new ScButton("送信", ColorFore, ColorBack, XPos - 50, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, MiddleFont, ColorFrame, ColorBackHover, ColorBackPress, Callback));
+		}
 	}
 
 	y = Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE;
@@ -241,13 +283,31 @@ Scene* SceneGuest::Update()
 				}
 			}
 			break;
-			case Command::Type::MESSAGE:
+			case Command::Type::CHAT_TEXT:
+			{
 				// 誰かがチャット打ちましたメッセージだったとき
-				break;
+
+				// チャットに追加する
+				int ID = Msg.single.num;
+				if (ID == -1)
+				{
+					// ホストのチャットだったとき
+					m_Chat->AddLine(-1, m_HostName->GetText(), Msg.string.text);
+				}
+				else
+				{
+					// ゲストのチャットだったとき
+					m_Chat->AddLine(ID, m_ConnectingGuest->GetText(ID), Msg.string.text);
+				}
+			}
+			break;
 			case Command::Type::CHANGE_NAME_MYSELF:
 			{
 				// ホストが名前変えましたメッセージだったとき
 				m_HostName->ChangeText(Msg.string.text);
+
+				// チャットの表示の方も名前の変更を反映する
+				m_Chat->ChangeName(-1, Msg.string.text);
 			}
 			break;
 			case Command::Type::CHANGE_NAME_GUEST:
@@ -262,6 +322,9 @@ Scene* SceneGuest::Update()
 					{
 						// 突き止めたら変更を反映する
 						m_ConnectingGuest->ChangeText(ID, Msg.string.text);
+
+						// チャットの表示の方も名前の変更を反映する
+						m_Chat->ChangeName(ID, Msg.string.text);
 						break;
 					}
 				}
@@ -326,31 +389,31 @@ void SceneGuest::SetIP1(std::string& IP)
 	// 画面部品とデータでIPを一致させなければならないことに気を付ける
 	// IP2-4とPortも同様
 
-	m_IP.d1 = std::atoi(IP.c_str());
+	m_IP.d1 = std::stoi(IP);
 	IP = std::to_string(m_IP.d1);
 }
 
 void SceneGuest::SetIP2(std::string& IP)
 {
-	m_IP.d2 = std::atoi(IP.c_str());
+	m_IP.d2 = std::stoi(IP);
 	IP = std::to_string(m_IP.d2);
 }
 
 void SceneGuest::SetIP3(std::string& IP)
 {
-	m_IP.d3 = std::atoi(IP.c_str());
+	m_IP.d3 = std::stoi(IP);
 	IP = std::to_string(m_IP.d3);
 }
 
 void SceneGuest::SetIP4(std::string& IP)
 {
-	m_IP.d4 = std::atoi(IP.c_str());
+	m_IP.d4 = std::stoi(IP);
 	IP = std::to_string(m_IP.d4);
 }
 
 void SceneGuest::SetPortNum(std::string& Port)
 {
-	m_Port = std::atoi(Port.c_str());
+	m_Port = std::stoi(Port);
 	Port = std::to_string(m_Port);
 }
 
@@ -367,8 +430,11 @@ void SceneGuest::SetName(std::string& Name)
 	{
 		// 名前の変更
 		LOG_INFO("自分の名前を変更：%s → %s", m_Name.c_str(), Name.c_str());
-
 		m_Name = Name;
+
+		// 自分の名前変更しましたメッセージがホストから戻ってくるので
+		// チャットの表示名の変更はそこで行う
+
 		if (m_ConnectStep == ConnectStep::ON)
 		{
 			// ホストに接続しているとき
@@ -407,15 +473,27 @@ void SceneGuest::TryConnect()
 			SetConnectStep(ConnectStep::WAIT_ACCEPT);
 		}
 	}
+	else
+	{
+		if (m_ConnectStep == ConnectStep::WAIT_ACCEPT)
+			LOG_INFO("現在既に接続を試み中");
+		else if (m_ConnectStep == ConnectStep::ON)
+			LOG_INFO("現在既に接続済み");
+	}
 }
 
 void SceneGuest::Disconnect()
 {
-	LOG_INFO("切断：NetHandle = %d", m_NetHandle);
-
 	if (m_NetHandle != -1)
+	{
 		CloseNetWork(m_NetHandle);
-	m_NetHandle = -1;
+		LOG_INFO("切断しました：NetHandle = %d", m_NetHandle);
+		m_NetHandle = -1;
+	}
+	else
+	{
+		LOG_INFO("切断済み：NetHandle = %d", m_NetHandle);
+	}
 }
 
 void SceneGuest::RequestAllUpdate()
@@ -425,13 +503,42 @@ void SceneGuest::RequestAllUpdate()
 	if (m_ConnectStep == ConnectStep::ON)
 	{
 		// ホストに接続しているとき
+		LOG_INFO("接続しているので実行");
 
 		// 名前など自身のデータ以外すべて削除する
 		m_ConnectingGuest->RemoveAllItem();
+		m_Chat->ClearAll();
 
-		// 更新リクエストを送信
+		// 全更新リクエストを送信
 		Command::Message msgSend = Command::MakeAllUpdate();
 		Command::Send(m_NetHandle, msgSend);
+	}
+	else
+	{
+		LOG_INFO("接続していないので実行しない");
+	}
+}
+
+void SceneGuest::SetChatText(std::string& Text)
+{
+	// チャットテキストが入力されたときのコールバック関数
+	m_ChatText = Text;
+}
+
+void SceneGuest::SendChatText()
+{
+	LOG_INFO("送信ボタン押下");
+
+	if (m_ConnectStep == ConnectStep::ON)
+	{
+		Command::Message msgSend = Command::MakeChatText(m_NetHandle, m_ChatText);
+		Command::Send(m_NetHandle, msgSend);
+
+		// ホストがチャットの反映を送り返してくるのでここではチャットに追加しない
+	}
+	else
+	{
+		LOG_INFO("接続していないので実行しない");
 	}
 }
 

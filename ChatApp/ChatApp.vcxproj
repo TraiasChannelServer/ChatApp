@@ -164,6 +164,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ScButton.cpp" />
+    <ClCompile Include="ScChat.cpp" />
     <ClCompile Include="ScEdit.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneChoiceHostGuest.cpp" />
@@ -190,6 +191,7 @@
     <ClInclude Include="KeyInputter.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="ScButton.h" />
+    <ClInclude Include="ScChat.h" />
     <ClInclude Include="ScEdit.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneChoiceHostGuest.h" />

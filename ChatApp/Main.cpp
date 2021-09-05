@@ -52,7 +52,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		{
 			static int FrameCount = 0;
 			static int Color = GetColor(255, 0, 0);
-			DrawString(Common::WINDOW_X_SIZE - 100, 0, std::to_string(++FrameCount).c_str(), Color);
+			DrawString(Common::WINDOW_X_SIZE - 70, 0, std::to_string(++FrameCount).c_str(), Color);
 		}
 
 		// •`‰æ

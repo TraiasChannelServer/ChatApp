@@ -10,6 +10,7 @@ FontManager::FontManager()
 void FontManager::Initialize()
 {
 	Destroy();
+	AddFont("‚l‚r ƒSƒVƒbƒN", 13, Type::TINY);
 	AddFont("‚l‚r ƒSƒVƒbƒN", 16, Type::SMALL);
 	AddFont("‚l‚r ƒSƒVƒbƒN", 20, Type::MIDDLE);
 	AddFont("‚l‚r ƒSƒVƒbƒN", 32, Type::BIG);

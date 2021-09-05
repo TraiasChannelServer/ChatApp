@@ -27,7 +27,7 @@ public:
 	// @param ColorFrame      境界線の色
 	// @param ColorBackHover  マウスを重ねたときの背景色
 	// @param ColorBackPress  マウス押下しているときの背景色
-	// @param Callback        ボタンを押したときのコールバック関数
+	// @param Callback        ボタンを押したときのコールバック関数、nullable
 	ScButton(const std::string& Text, unsigned int ColorFore, unsigned int ColorBack, Bound* bound, TextAlignment::Gravity gravity, int FontHandle,
 		unsigned int ColorFrame, unsigned int ColorBackHover, unsigned int ColorBackPress, DelegateVoidBase* Callback);
 

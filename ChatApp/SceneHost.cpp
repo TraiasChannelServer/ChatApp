@@ -32,15 +32,19 @@ SceneHost::SceneHost()
 	, m_AcceptOrReject()
 	, m_RequestNameTimeStart()
 	, m_AcceptedGuest()
+	, m_Chat()
+	, m_ChatText()
 {
 	// コンストラクタでは画面の部品を配置する
 	LOG_INFO("ホスト画面生成");
 
+	int TinyFont = FontManager::Inst().GetFontHandle(FontManager::Type::TINY);
 	int SmallFont = FontManager::Inst().GetFontHandle(FontManager::Type::SMALL);
 	int MiddleFont = FontManager::Inst().GetFontHandle(FontManager::Type::MIDDLE);
 	int BigFont = FontManager::Inst().GetFontHandle(FontManager::Type::BIG);
 
 	unsigned int BlackColor = GetColor(0, 0, 0);
+	unsigned int WhiteColor = GetColor(255, 255, 255);
 	unsigned int GreenColor = GetColor(0, 255, 0);
 	unsigned int RedColor = GetColor(255, 50, 255);
 
@@ -121,6 +125,7 @@ SceneHost::SceneHost()
 
 	y += Y_STEP_SMALL;
 	{
+		// 承認済みゲストリスト
 		unsigned int ColorFore = BlackColor;
 		unsigned int ColorBack = GetColor(210, 210, 210);
 		unsigned int ColorFrame = GetColor(100, 50, 50);
@@ -129,7 +134,38 @@ SceneHost::SceneHost()
 		AddBaseComponent(m_AcceptedGuest);
 	}
 
-	y = Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE;
+	{
+		static constexpr int DELTA_WIDTH = 120;
+		unsigned int ColorHead = GetColor(0, 200, 0);
+		unsigned int ColorBody = WhiteColor;
+		unsigned int ColorFrame = GetColor(150, 180, 180);
+		int XPos = Common::WINDOW_X_SIZE / 2 - DELTA_WIDTH;
+		int YPos = 20;
+		int XSize = Common::WINDOW_X_SIZE / 2 + DELTA_WIDTH - 20;
+		int YSize = Common::WINDOW_Y_SIZE - 40 - Y_STEP_MIDDLE;
+		{
+			// チャット枠
+			BoundRect* bound = new BoundRect(XPos, YPos, XSize, YSize);
+			m_Chat = new ScChat(bound, TinyFont, SmallFont, ColorHead, ColorBody, ColorFrame);
+			AddBaseComponent(m_Chat);
+		}
+		{
+			// チャット入力枠
+			BoundRect* bound = new BoundRect(XPos, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, XSize, Y_SIZE);
+			auto Callback = new DelegateArg<SceneHost, std::string>(*this, &SceneHost::SetChatText);
+			AddBaseComponent(new ScEdit(m_ChatText, EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 64, Callback));
+		}
+		{
+			unsigned int ColorFore = BlackColor;
+			unsigned int ColorBack = GetColor(180, 220, 220);
+			unsigned int ColorFrame = GetColor(50, 100, 100);
+			unsigned int ColorBackHover = GetColor(200, 240, 240);
+			unsigned int ColorBackPress = GetColor(160, 200, 200);
+			auto Callback = new DelegateVoid<SceneHost>(*this, &SceneHost::SendChatText);
+			AddBaseComponent(new ScButton("送信", ColorFore, ColorBack, XPos - 50, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, MiddleFont, ColorFrame, ColorBackHover, ColorBackPress, Callback));
+		}
+	}
+
 	{
 		unsigned int ColorFore = BlackColor;
 		unsigned int ColorBack = GetColor(180, 220, 180);
@@ -137,7 +173,7 @@ SceneHost::SceneHost()
 		unsigned int ColorBackHover = GetColor(200, 240, 200);
 		unsigned int ColorBackPress = GetColor(160, 200, 160);
 		auto Callback = new DelegateVoid<SceneHost>(*this, &SceneHost::End);
-		AddBaseComponent(new ScButton("終了", ColorFore, ColorBack, X_START, y, MiddleFont, ColorFrame, ColorBackHover, ColorBackPress, Callback));
+		AddBaseComponent(new ScButton("終了", ColorFore, ColorBack, X_START, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, MiddleFont, ColorFrame, ColorBackHover, ColorBackPress, Callback));
 	}
 }
 
@@ -323,17 +359,12 @@ void SceneHost::ProcessNewGuest()
 			}
 
 			// 新規ゲストに全承認済みゲストを知らせる（新規ゲスト本人を含まない）
-			LOG_INFO("[AcceptGuestStep::SELECTED] 新規ゲストに全承認済みゲストを知らせる（新規ゲスト本人を含まない）");
+			LOG_INFO("[AcceptGuestStep::SELECTED] 新規ゲストに全承認済みゲストを知らせる（新規ゲスト本人を含む）");
 			for (auto& pair : list)
 			{
 				int ID = pair.first;
 				LOG_INFO("[AcceptGuestStep::SELECTED] ID = %d, Name = %s", ID, pair.second.Text.c_str());
 
-				if (ID == m_NewGuestNetHandle)
-				{
-					LOG_INFO("[AcceptGuestStep::SELECTED] 新規ゲスト本人なのでメッセージを送信しない");
-					continue;
-				}
 				Command::Message msgSend2 = Command::MakeNewGuest(ID, pair.second.Text);
 				Command::Send(m_NewGuestNetHandle, msgSend2);
 			}
@@ -409,9 +440,24 @@ void SceneHost::ProcessReceiveCommand()
 
 			switch (Msg.type)
 			{
-			case Command::Type::MESSAGE:
+			case Command::Type::CHAT_TEXT:
+			{
 				// ゲストがチャットを打ったとのこと
-				break;
+
+				// チャットに追加する
+				m_Chat->AddLine(ID, m_AcceptedGuest->GetText(ID), Msg.string.text);
+
+				// 全承認済みゲストに知らせる（チャットを打ったゲスト本人を含む）
+				Command::Message msgSend = Command::MakeChatText(ID, Msg.string.text);
+				auto& list2 = m_AcceptedGuest->GetItem();
+				for (auto& pair2 : list2)
+				{
+					int ID2 = pair2.first;
+					LOG_INFO("ID = %d, Name = %s", ID2, pair2.second.Text.c_str());
+					Command::Send(ID2, msgSend);
+				}
+			}
+			break;
 			case Command::Type::CHANGE_NAME_MYSELF:
 			{
 				// ゲストが名前の変更をしたとのこと
@@ -419,19 +465,16 @@ void SceneHost::ProcessReceiveCommand()
 				// 届いて来た名前に変更する
 				m_AcceptedGuest->ChangeText(ID, Msg.string.text);
 
-				// 全承認済みゲストに知らせる（名前を変えたゲスト本人を除く）
+				// チャットの表示の方も名前の変更を反映する
+				m_Chat->ChangeName(ID, Msg.string.text);
+
+				// 全承認済みゲストに知らせる（名前を変えたゲスト本人を含む）
 				Command::Message msgSend = Command::MakeChangeNameGuest(ID, Msg.string.text);
 				auto& list2 = m_AcceptedGuest->GetItem();
-				for (auto& pair : list2)
+				for (auto& pair2 : list2)
 				{
-					int ID2 = pair.first;
-					LOG_INFO("ID = %d, Name = %s", ID2, pair.second.Text.c_str());
-
-					if (ID2 == ID)
-					{
-						LOG_INFO("名前を変更したゲスト本人なのでメッセージを送信しない");
-						continue;
-					}
+					int ID2 = pair2.first;
+					LOG_INFO("ID = %d, Name = %s", ID2, pair2.second.Text.c_str());
 					Command::Send(ID2, msgSend);
 				}
 			}
@@ -440,19 +483,21 @@ void SceneHost::ProcessReceiveCommand()
 			{
 				// 全データを更新したいとのこと
 
-				// 接続中のゲストを全て知らせる
+				// 接続中のゲストを全て知らせる（ゲスト本人を含む）
 				auto& list2 = m_AcceptedGuest->GetItem();
-				for (auto& pair : list2)
+				for (auto& pair2 : list2)
 				{
-					int ID2 = pair.first;
-					LOG_INFO("ID = %d, Name = %s", ID2, pair.second.Text.c_str());
+					int ID2 = pair2.first;
+					LOG_INFO("ID = %d, Name = %s", ID2, pair2.second.Text.c_str());
+					Command::Message msgSend = Command::MakeNewGuest(ID2, pair2.second.Text.c_str());
+					Command::Send(ID, msgSend);
+				}
 
-					if (ID2 == ID)
-					{
-						LOG_INFO("全データ更新したいゲスト本人なのでメッセージを送信しない");
-						continue;
-					}
-					Command::Message msgSend = Command::MakeNewGuest(ID2, pair.second.Text.c_str());
+				// チャットの履歴を全て知らせる
+				auto& lines = m_Chat->GetLines();
+				for (auto& line : lines)
+				{
+					Command::Message msgSend = Command::MakeChatText(line.ID, line.Body);
 					Command::Send(ID, msgSend);
 				}
 			}
@@ -467,7 +512,7 @@ void SceneHost::ProcessReceiveCommand()
 
 void SceneHost::SetPortNum(std::string& Port)
 {
-	m_Port = std::atoi(Port.c_str());
+	m_Port = std::stoi(Port);
 	Port = std::to_string(m_Port);
 }
 
@@ -480,8 +525,12 @@ void SceneHost::SetName(std::string& Name)
 	else
 	{
 		LOG_INFO("ホスト名を変更：%s → %s", m_Name.c_str(), Name.c_str());
-
 		m_Name = Name;
+
+		// チャットの表示の方も名前の変更を反映する
+		m_Chat->ChangeName(-1, m_Name);
+
+		// 全承認済みゲストにホストが名前を変更したことを知らせる
 		auto& list = m_AcceptedGuest->GetItem();
 		for (auto& pair : list)
 		{
@@ -523,7 +572,7 @@ void SceneHost::SetAcceptGuest(bool& OffOn)
 	else
 		StopListenNetWork();
 
-	LOG_INFO("新規ゲストの受付トグル：%sに変更", OffOn ? "true" : "false");
+	LOG_INFO("新規ゲストの受付トグル：%sに変更した", OffOn ? "true" : "false");
 }
 
 void SceneHost::AcceptGuest()
@@ -562,14 +611,35 @@ void SceneHost::RejectGuest()
 	}
 }
 
-/*
- * m_AcceptGuestStepを変更したらm_AcceptStateも変更する必要があるので
- * m_AcceptGuestStepを変更するときは必ずこの関数で行う
- */
-void SceneHost::SetAcceptGuestStep(AcceptGuestStep Step)
+void SceneHost::SetChatText(std::string& Text)
 {
-	m_AcceptGuestStep = Step;
-	m_AcceptState->ChangeText(ACCEPT_STEP_STATE[static_cast<int>(m_AcceptGuestStep)]);
+	// チャットテキストが入力されたときのコールバック関数
+	m_ChatText = Text;
+}
+
+void SceneHost::SendChatText()
+{
+	LOG_INFO("送信ボタン押下");
+
+	if (m_AcceptedGuest->GetItem().size() > 0)
+	{
+		// チャットを追加
+		m_Chat->AddLine(-1, m_Name, m_ChatText);
+
+		// 全承認済みゲストにホストがチャットを打ったことを知らせる
+		Command::Message msgSend = Command::MakeChatText(-1, m_ChatText);
+		auto& list = m_AcceptedGuest->GetItem();
+		for (auto& pair : list)
+		{
+			int ID = pair.first;
+			LOG_INFO("ID = %d, Name = %s", ID, pair.second.Text.c_str());
+			Command::Send(ID, msgSend);
+		}
+	}
+	else
+	{
+		LOG_INFO("承認済みゲストが一人もいないので実行しない");
+	}
 }
 
 void SceneHost::Disconnect()
@@ -597,5 +667,15 @@ void SceneHost::End()
 		Disconnect();
 		m_Next = SceneCreator::Create(SceneCreator::Name::CHOICE_HOST_GUEST);
 	}
+}
+
+/*
+ * m_AcceptGuestStepを変更したらm_AcceptStateも変更する必要があるので
+ * m_AcceptGuestStepを変更するときは必ずこの関数で行う
+ */
+void SceneHost::SetAcceptGuestStep(AcceptGuestStep Step)
+{
+	m_AcceptGuestStep = Step;
+	m_AcceptState->ChangeText(ACCEPT_STEP_STATE[static_cast<int>(m_AcceptGuestStep)]);
 }
 

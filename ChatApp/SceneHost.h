@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "ScLabel.h"
 #include "ScList.h"
+#include "ScChat.h"
 #include <string>
 
 class SceneHost : public Scene
@@ -53,6 +54,8 @@ private:
 	void AcceptGuest();
 	void RejectGuest();
 	void Disconnect();
+	void SetChatText(std::string& Text);
+	void SendChatText();
 	void End();
 
 	void SetAcceptGuestStep(AcceptGuestStep Step);
@@ -80,4 +83,7 @@ private:
 
 	// 承認されたゲスト達を所持する画面部品
 	ScList* m_AcceptedGuest;
+
+	ScChat* m_Chat;
+	std::string m_ChatText;
 };

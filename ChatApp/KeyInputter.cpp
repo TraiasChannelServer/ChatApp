@@ -16,12 +16,13 @@ KeyInputter::KeyInputter()
 /*
  * この関数を呼んだ後は必ずEnd関数を呼ぶこと
  * 
- * @param User   キー入力を使用するクラスのアドレス
- * @param x      入力中の文字列を描画するX座標
- * @param y      入力中の文字列を描画するY座標
- * @param Length 入力できる最大文字数（半角基準サイズ, \0を含まない）
+ * @param User     キー入力を使用するクラスのアドレス
+ * @param x        入力中の文字列を描画するX座標
+ * @param y        入力中の文字列を描画するY座標
+ * @param Length   入力できる最大文字数（半角基準サイズ, \0を含まない）
+ * @param InitText 入力開始時点からの初期文字列
  */
-bool KeyInputter::Start(const void* User, int x, int y, int Length)
+bool KeyInputter::Start(const void* User, int x, int y, int Length, const std::string& InitText)
 {
 	if (GetState(User) != State::FREE)
 	{
@@ -40,6 +41,7 @@ bool KeyInputter::Start(const void* User, int x, int y, int Length)
 	m_Y = y;
 	m_Length = Length;
 
+	SetKeyInputString(InitText.c_str(), m_Handle);
 	SetActiveKeyInput(m_Handle);
 
 	return true;

@@ -26,7 +26,7 @@ private:
 	KeyInputter& operator=(KeyInputter&&) = delete;
 
 public:
-	bool Start(const void* User, int x, int y, int Length);
+	bool Start(const void* User, int x, int y, int Length, const std::string& InitText);
 	State GetState(const void* User);
 	bool IsStateFinish(const void* User);
 	std::string End(const void* User);
