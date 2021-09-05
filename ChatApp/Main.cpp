@@ -32,7 +32,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// 最初に表示するシーンを生成
 	Scene* scene = SceneCreator::Create(SceneCreator::Name::CHOICE_HOST_GUEST);
 
-	Logger::Info("メインループ開始");
+	LOG_INFO("メインループ開始");
 
 	// メインループ
 	while (ProcessMessage() == 0 && Common::ApplicationExecution == true) {
@@ -62,7 +62,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		WaitTimer(40);
 	}
 
-	Logger::Info("メインループ終了");
+	LOG_INFO("メインループ終了");
 
 	// シーンを破棄
 	delete scene;

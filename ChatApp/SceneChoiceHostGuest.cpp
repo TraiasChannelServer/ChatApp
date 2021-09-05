@@ -10,7 +10,7 @@ SceneChoiceHostGuest::SceneChoiceHostGuest()
 	: m_Next()
 {
 	// コンストラクタでは画面の部品を配置する
-	Logger::Info("ホスト・ゲスト選択画面生成");
+	LOG_INFO("ホスト・ゲスト選択画面生成");
 
 	int SmallFont = FontManager::Inst().GetFontHandle(FontManager::Type::SMALL);
 	int HugeFont = FontManager::Inst().GetFontHandle(FontManager::Type::HUGE);

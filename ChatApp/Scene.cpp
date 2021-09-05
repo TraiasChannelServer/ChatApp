@@ -8,13 +8,13 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-	Logger::Info("シーン基底クラスデストラクタ");
+	LOG_INFO("シーン基底クラスデストラクタ");
 	DeleteComponent(m_BaseComponent);
 }
 
 void Scene::AddBaseComponent(ScreenComponent* component)
 {
-	Logger::Info("画面基本部品追加：component = 0x%09x", component);
+	LOG_INFO("画面基本部品追加：component = 0x%09x", component);
 	m_BaseComponent.push_back(component);
 }
 
@@ -54,7 +54,7 @@ void Scene::DeleteComponent(std::vector<ScreenComponent*>& Component)
 {
 	for (auto sc : Component)
 	{
-		Logger::Info("画面部品破棄：component = 0x%09x", sc);
+		LOG_INFO("画面部品破棄：component = 0x%09x", sc);
 		delete sc;
 	}
 	Component.clear();

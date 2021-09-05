@@ -71,7 +71,7 @@ void ScLabel::Draw() const
 
 void ScLabel::ChangeText(const std::string& Text)
 {
-	Logger::Info("ラベル名を変更：Text = %s → %s", m_Text.c_str(), Text.c_str());
+	LOG_INFO("ラベル名を変更：Text = %s → %s", m_Text.c_str(), Text.c_str());
 
 	m_Text = Text;
 	if (m_FitBoundMode)

@@ -53,11 +53,11 @@ void ScList::AddItem(int ID, const std::string& Text)
 {
 	if (m_Item.count(ID) == 1)
 	{
-		Logger::Warn("リストにアイテムを追加しようとしたが既に存在する：ID = %d, Text = %s", ID, m_Item[ID].Text.c_str());
+		LOG_WARN("リストにアイテムを追加しようとしたが既に存在する：ID = %d, Text = %s", ID, m_Item[ID].Text.c_str());
 		return;
 	}
 
-	Logger::Info("リストにアイテムを追加：ID = %d, Text = %s", ID, Text.c_str());
+	LOG_INFO("リストにアイテムを追加：ID = %d, Text = %s", ID, Text.c_str());
 
 	Item item = {Text};
 	m_Item[ID] = item;
@@ -68,18 +68,18 @@ void ScList::RemoveItem(int ID)
 {
 	if (m_Item.count(ID) == 0)
 	{
-		Logger::Warn("リストからアイテムを削除しようとしたが存在しない：ID = %d", ID);
+		LOG_WARN("リストからアイテムを削除しようとしたが存在しない：ID = %d", ID);
 		return;
 	}
 
-	Logger::Info("リストからアイテムを削除：ID = %d, Text = %s", ID, m_Item[ID].Text.c_str());
+	LOG_INFO("リストからアイテムを削除：ID = %d, Text = %s", ID, m_Item[ID].Text.c_str());
 	m_Item.erase(ID);
 	Alignment();
 }
 
 void ScList::RemoveAllItem()
 {
-	Logger::Info("リストから全アイテムを削除");
+	LOG_INFO("リストから全アイテムを削除");
 	m_Item.clear();
 	Alignment();
 }
@@ -88,11 +88,11 @@ void ScList::ChangeText(int ID, const std::string& Text)
 {
 	if (m_Item.count(ID) == 0)
 	{
-		Logger::Warn("リストのアイテム名を変更しようとしたが存在しない：ID = %d", ID);
+		LOG_WARN("リストのアイテム名を変更しようとしたが存在しない：ID = %d", ID);
 		return;
 	}
 
-	Logger::Info("リストのアイテム名を変更：Text = %s → %s", m_Item[ID].Text.c_str(), Text.c_str());
+	LOG_INFO("リストのアイテム名を変更：Text = %s → %s", m_Item[ID].Text.c_str(), Text.c_str());
 
 	m_Item[ID].Text = Text;
 }

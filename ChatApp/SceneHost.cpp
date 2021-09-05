@@ -34,7 +34,7 @@ SceneHost::SceneHost()
 	, m_AcceptedGuest()
 {
 	// コンストラクタでは画面の部品を配置する
-	Logger::Info("ホスト画面生成");
+	LOG_INFO("ホスト画面生成");
 
 	int SmallFont = FontManager::Inst().GetFontHandle(FontManager::Type::SMALL);
 	int MiddleFont = FontManager::Inst().GetFontHandle(FontManager::Type::MIDDLE);
@@ -143,7 +143,7 @@ SceneHost::SceneHost()
 
 SceneHost::~SceneHost()
 {
-	Logger::Info("ホスト画面破棄");
+	LOG_INFO("ホスト画面破棄");
 
 	DataFileInOut::Inst().SetPortNum(m_Port);
 	DataFileInOut::Inst().SetName(m_Name);
@@ -200,14 +200,14 @@ void SceneHost::ProcessNewGuest()
 			// 新しい接続を発見したら
 			IPDATA ip = {};
 			GetNetWorkIP(m_NewGuestNetHandle, &ip);
-			Logger::Info("[AcceptGuestStep::WAIT_CONNECT] 新しい接続を発見：NetHandle = %d, IP = %d.%d.%d.%d", m_NewGuestNetHandle, ip.d1, ip.d2, ip.d3, ip.d4);
+			LOG_INFO("[AcceptGuestStep::WAIT_CONNECT] 新しい接続を発見：NetHandle = %d, IP = %d.%d.%d.%d", m_NewGuestNetHandle, ip.d1, ip.d2, ip.d3, ip.d4);
 
-			Logger::Info("[AcceptGuestStep::WAIT_CONNECT] 現在の承認済みゲストの接続数：%d/%d", m_AcceptedGuest->GetItem().size(), ACCEPTED_GUEST_MAX);
+			LOG_INFO("[AcceptGuestStep::WAIT_CONNECT] 現在の承認済みゲストの接続数：%d/%d", m_AcceptedGuest->GetItem().size(), ACCEPTED_GUEST_MAX);
 
 			if (m_AcceptedGuest->GetItem().size() < ACCEPTED_GUEST_MAX)
 			{
 				// ゲストの接続数が最大数に達していない時
-				Logger::Warn("[AcceptGuestStep::WAIT_CONNECT] ゲストの接続数が最大数に達していないのでAcceptGuestStep::REQUEST_NAMEへ進む");
+				LOG_WARN("[AcceptGuestStep::WAIT_CONNECT] ゲストの接続数が最大数に達していないのでAcceptGuestStep::REQUEST_NAMEへ進む");
 
 				// 相手のIPを保持
 				m_NewGuestIP->ChangeText(Common::IP2String(ip));
@@ -218,7 +218,7 @@ void SceneHost::ProcessNewGuest()
 			else
 			{
 				// ゲストの接続数が最大数に達していた時
-				Logger::Warn("[AcceptGuestStep::WAIT_CONNECT] ゲストの接続数が最大数に達しているので接続を拒否");
+				LOG_WARN("[AcceptGuestStep::WAIT_CONNECT] ゲストの接続数が最大数に達しているので接続を拒否");
 
 				// 新規接続しようとしているゲストに拒否メッセージを送信（このときホストは名乗らない）
 				Command::Message msgSend = Command::MakeConnect(false, DUMMY_TEXT);
@@ -241,7 +241,7 @@ void SceneHost::ProcessNewGuest()
 			if (Msg.type == Command::Type::CHANGE_NAME_MYSELF)
 			{
 				// 相手が名乗ってきたら
-				Logger::Warn("[AcceptGuestStep::REQUEST_NAME] 名乗りメッセージであるのでAcceptGuestStep::SELECT_ACCEPT_REJECTへ進む");
+				LOG_WARN("[AcceptGuestStep::REQUEST_NAME] 名乗りメッセージであるのでAcceptGuestStep::SELECT_ACCEPT_REJECTへ進む");
 
 				// 相手の名前を保持
 				m_NewGuestName->ChangeText(Msg.string.text);
@@ -251,7 +251,7 @@ void SceneHost::ProcessNewGuest()
 			else
 			{
 				// 相手が名乗りではないメッセージを送ってきたら
-				Logger::Warn("[AcceptGuestStep::REQUEST_NAME] 名乗りメッセージではない");
+				LOG_WARN("[AcceptGuestStep::REQUEST_NAME] 名乗りメッセージではない");
 				// 拒否
 				Reject = true;
 			}
@@ -262,7 +262,7 @@ void SceneHost::ProcessNewGuest()
 			if (GetNowCount() - m_RequestNameTimeStart >= REQUEST_NAME_TIMEOUT)
 			{
 				// タイムアウト
-				Logger::Warn("[AcceptGuestStep::REQUEST_NAME] タイムアウト");
+				LOG_WARN("[AcceptGuestStep::REQUEST_NAME] タイムアウト");
 				// 拒否
 				Reject = true;
 			}
@@ -275,7 +275,7 @@ void SceneHost::ProcessNewGuest()
 
 		if (Reject)
 		{
-			Logger::Warn("[AcceptGuestStep::REQUEST_NAME] 接続を拒否してAcceptGuestStep::WAIT_CONNECTへ戻る");
+			LOG_WARN("[AcceptGuestStep::REQUEST_NAME] 接続を拒否してAcceptGuestStep::WAIT_CONNECTへ戻る");
 
 			// 新規接続しようとしているゲストに拒否メッセージを送信（このときホストは名乗らない）
 			Command::Message msgSend = Command::MakeConnect(false, DUMMY_TEXT);
@@ -296,7 +296,7 @@ void SceneHost::ProcessNewGuest()
 		if (m_AcceptOrReject)
 		{
 			// 承認する場合
-			Logger::Info("[AcceptGuestStep::SELECTED] 承認");
+			LOG_INFO("[AcceptGuestStep::SELECTED] 承認");
 
 			// 承認メッセージを送信（このときホストも名乗り返す）
 			Command::Message msgSend = Command::MakeConnect(true, m_Name);
@@ -306,16 +306,16 @@ void SceneHost::ProcessNewGuest()
 			m_AcceptedGuest->AddItem(m_NewGuestNetHandle, m_NewGuestName->GetText());
 
 			// 全承認済みゲストに新規ゲストの接続を知らせる（新規ゲスト本人を含まない）
-			Logger::Info("[AcceptGuestStep::SELECTED] 全承認済みゲストに新規ゲストの接続を知らせる（新規ゲスト本人を含まない）");
+			LOG_INFO("[AcceptGuestStep::SELECTED] 全承認済みゲストに新規ゲストの接続を知らせる（新規ゲスト本人を含まない）");
 			auto& list = m_AcceptedGuest->GetItem();
 			for (auto& pair : list)
 			{
 				int ID = pair.first;
-				Logger::Info("[AcceptGuestStep::SELECTED] ID = %d, Name = %s", ID, pair.second.Text.c_str());
+				LOG_INFO("[AcceptGuestStep::SELECTED] ID = %d, Name = %s", ID, pair.second.Text.c_str());
 
 				if (ID == m_NewGuestNetHandle)
 				{
-					Logger::Info("[AcceptGuestStep::SELECTED] 新規ゲスト本人なのでメッセージを送信しない");
+					LOG_INFO("[AcceptGuestStep::SELECTED] 新規ゲスト本人なのでメッセージを送信しない");
 					continue;
 				}
 				Command::Message msgSend2 = Command::MakeNewGuest(m_NewGuestNetHandle, m_NewGuestName->GetText());
@@ -323,15 +323,15 @@ void SceneHost::ProcessNewGuest()
 			}
 
 			// 新規ゲストに全承認済みゲストを知らせる（新規ゲスト本人を含まない）
-			Logger::Info("[AcceptGuestStep::SELECTED] 新規ゲストに全承認済みゲストを知らせる（新規ゲスト本人を含まない）");
+			LOG_INFO("[AcceptGuestStep::SELECTED] 新規ゲストに全承認済みゲストを知らせる（新規ゲスト本人を含まない）");
 			for (auto& pair : list)
 			{
 				int ID = pair.first;
-				Logger::Info("[AcceptGuestStep::SELECTED] ID = %d, Name = %s", ID, pair.second.Text.c_str());
+				LOG_INFO("[AcceptGuestStep::SELECTED] ID = %d, Name = %s", ID, pair.second.Text.c_str());
 
 				if (ID == m_NewGuestNetHandle)
 				{
-					Logger::Info("[AcceptGuestStep::SELECTED] 新規ゲスト本人なのでメッセージを送信しない");
+					LOG_INFO("[AcceptGuestStep::SELECTED] 新規ゲスト本人なのでメッセージを送信しない");
 					continue;
 				}
 				Command::Message msgSend2 = Command::MakeNewGuest(ID, pair.second.Text);
@@ -341,7 +341,7 @@ void SceneHost::ProcessNewGuest()
 		else
 		{
 			// 拒否する場合
-			Logger::Info("[AcceptGuestStep::SELECTED] 拒否");
+			LOG_INFO("[AcceptGuestStep::SELECTED] 拒否");
 
 			// 拒否メッセージを送信（このときホストは名乗らない）
 			Command::Message msgSend = Command::MakeConnect(false, DUMMY_TEXT);
@@ -363,7 +363,7 @@ void SceneHost::ProcessDissconectGuest()
 		return;
 	}
 
-	Logger::Info("切断を発見：NetHandle = %d", LostHandle);
+	LOG_INFO("切断を発見：NetHandle = %d", LostHandle);
 
 	auto& list = m_AcceptedGuest->GetItem();
 	for (auto& pair : list)
@@ -376,7 +376,7 @@ void SceneHost::ProcessDissconectGuest()
 			m_AcceptedGuest->RemoveItem(ID);
 			f = true;
 
-			Logger::Info("切断者のIDを承認済みゲスト内に発見したので削除", LostHandle);
+			LOG_INFO("切断者のIDを承認済みゲスト内に発見したので削除", LostHandle);
 			break;
 		}
 	}
@@ -388,7 +388,7 @@ void SceneHost::ProcessDissconectGuest()
 		for (auto& pair : list)
 		{
 			int ID = pair.first;
-			Logger::Info("ID = %d, Name = %s", ID, pair.second.Text.c_str());
+			LOG_INFO("ID = %d, Name = %s", ID, pair.second.Text.c_str());
 			Command::Send(ID, msgSend);
 		}
 	}
@@ -425,11 +425,11 @@ void SceneHost::ProcessReceiveCommand()
 				for (auto& pair : list2)
 				{
 					int ID2 = pair.first;
-					Logger::Info("ID = %d, Name = %s", ID2, pair.second.Text.c_str());
+					LOG_INFO("ID = %d, Name = %s", ID2, pair.second.Text.c_str());
 
 					if (ID2 == ID)
 					{
-						Logger::Info("名前を変更したゲスト本人なのでメッセージを送信しない");
+						LOG_INFO("名前を変更したゲスト本人なのでメッセージを送信しない");
 						continue;
 					}
 					Command::Send(ID2, msgSend);
@@ -445,11 +445,11 @@ void SceneHost::ProcessReceiveCommand()
 				for (auto& pair : list2)
 				{
 					int ID2 = pair.first;
-					Logger::Info("ID = %d, Name = %s", ID2, pair.second.Text.c_str());
+					LOG_INFO("ID = %d, Name = %s", ID2, pair.second.Text.c_str());
 
 					if (ID2 == ID)
 					{
-						Logger::Info("全データ更新したいゲスト本人なのでメッセージを送信しない");
+						LOG_INFO("全データ更新したいゲスト本人なのでメッセージを送信しない");
 						continue;
 					}
 					Command::Message msgSend = Command::MakeNewGuest(ID2, pair.second.Text.c_str());
@@ -479,14 +479,14 @@ void SceneHost::SetName(std::string& Name)
 	}
 	else
 	{
-		Logger::Info("ホスト名を変更：%s → %s", m_Name.c_str(), Name.c_str());
+		LOG_INFO("ホスト名を変更：%s → %s", m_Name.c_str(), Name.c_str());
 
 		m_Name = Name;
 		auto& list = m_AcceptedGuest->GetItem();
 		for (auto& pair : list)
 		{
 			int ID = pair.first;
-			Logger::Info("ID = %d, Name = %s", ID, pair.second.Text.c_str());
+			LOG_INFO("ID = %d, Name = %s", ID, pair.second.Text.c_str());
 
 			Command::Message msgSend = Command::MakeChangeNameMySelf(m_Name);
 			Command::Send(ID, msgSend);
@@ -497,7 +497,7 @@ void SceneHost::SetName(std::string& Name)
 void SceneHost::SetAcceptGuest(bool& OffOn)
 {
 	// 新規ゲストの受付トグルのコールバック関数
-	Logger::Info("新規ゲストの受付トグル：%sに変更を試みる", OffOn ? "true" : "false");
+	LOG_INFO("新規ゲストの受付トグル：%sに変更を試みる", OffOn ? "true" : "false");
 
 	if (m_AcceptGuestStep == AcceptGuestStep::OFF)
 	{
@@ -526,13 +526,13 @@ void SceneHost::SetAcceptGuest(bool& OffOn)
 	else
 		StopListenNetWork();
 
-	Logger::Info("新規ゲストの受付トグル：%sに変更", OffOn ? "true" : "false");
+	LOG_INFO("新規ゲストの受付トグル：%sに変更", OffOn ? "true" : "false");
 }
 
 void SceneHost::AcceptGuest()
 {
 	// 新規ゲストの承認ボタンのコールバック関数
-	Logger::Info("承認ボタン押下");
+	LOG_INFO("承認ボタン押下");
 
 	// プログラム上 100% true になるはずの条件
 	if (m_AcceptGuestStep == AcceptGuestStep::SELECT_ACCEPT_REJECT)
@@ -544,14 +544,14 @@ void SceneHost::AcceptGuest()
 	}
 	else
 	{
-		Logger::Warn("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
+		LOG_WARN("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
 	}
 }
 
 void SceneHost::RejectGuest()
 {
 	// 新規ゲストの拒否ボタンのコールバック関数
-	Logger::Info("拒否ボタン押下");
+	LOG_INFO("拒否ボタン押下");
 
 	// プログラム上 100% true になるはずの条件
 	if (m_AcceptGuestStep == AcceptGuestStep::SELECT_ACCEPT_REJECT)
@@ -563,21 +563,21 @@ void SceneHost::RejectGuest()
 	}
 	else
 	{
-		Logger::Warn("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
+		LOG_WARN("このログは出力されてはならない：m_AcceptGuestStep = %d", m_AcceptGuestStep);
 	}
 }
 
 void SceneHost::Disconnect()
 {
 	// 全承認済みゲストにホストが切断することを知らせる
-	Logger::Info("全承認済みゲストにホストが切断することを知らせる");
+	LOG_INFO("全承認済みゲストにホストが切断することを知らせる");
 
 	Command::Message msgSend = Command::MakeConnect(false, m_Name);
 	auto& list = m_AcceptedGuest->GetItem();
 	for (auto& pair : list)
 	{
 		int ID = pair.first;
-		Logger::Info("ID = %d, Name = %s", ID, pair.second.Text.c_str());
+		LOG_INFO("ID = %d, Name = %s", ID, pair.second.Text.c_str());
 		Command::Send(ID, msgSend);
 	}
 	m_AcceptedGuest->RemoveAllItem();
@@ -585,7 +585,7 @@ void SceneHost::Disconnect()
 
 void SceneHost::End()
 {
-	Logger::Info("終了ボタン押下：m_Next = %d", m_Next);
+	LOG_INFO("終了ボタン押下：m_Next = %d", m_Next);
 
 	if (m_Next == nullptr)
 	{

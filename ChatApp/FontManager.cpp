@@ -20,7 +20,7 @@ void FontManager::Destroy()
 {
 	for (auto& Pair : m_FontHandle)
 	{
-		Logger::Info("フォント破棄：type = %d", static_cast<int>(Pair.first));
+		LOG_INFO("フォント破棄：type = %d", static_cast<int>(Pair.first));
 		DeleteGraph(Pair.second);
 	}
 	m_FontHandle.clear();
@@ -33,6 +33,6 @@ int FontManager::GetFontHandle(Type type)
 
 void FontManager::AddFont(const char* FontName, int Size, Type type)
 {
-	Logger::Info("フォント追加：type = %d", static_cast<int>(type));
+	LOG_INFO("フォント追加：type = %d", static_cast<int>(type));
 	m_FontHandle[type] = CreateFontToHandle(FontName, Size, -1);
 }

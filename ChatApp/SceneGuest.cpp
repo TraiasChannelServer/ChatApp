@@ -28,7 +28,7 @@ SceneGuest::SceneGuest()
 	, m_ConnectingGuest()
 {
 	// コンストラクタでは画面の部品を配置する
-	Logger::Info("ゲスト画面生成");
+	LOG_INFO("ゲスト画面生成");
 
 	int SmallFont = FontManager::Inst().GetFontHandle(FontManager::Type::SMALL);
 	int MiddleFont = FontManager::Inst().GetFontHandle(FontManager::Type::MIDDLE);
@@ -157,7 +157,7 @@ SceneGuest::SceneGuest()
 
 SceneGuest::~SceneGuest()
 {
-	Logger::Info("ゲスト画面破棄");
+	LOG_INFO("ゲスト画面破棄");
 
 	DataFileInOut::Inst().SetIP(m_IP);
 	DataFileInOut::Inst().SetPortNum(m_Port);
@@ -190,7 +190,7 @@ Scene* SceneGuest::Update()
 				if (Msg.single.flag)
 				{
 					// 承認されたとき
-					Logger::Info("[ConnectStep::WAIT_ACCEPT] 承認された");
+					LOG_INFO("[ConnectStep::WAIT_ACCEPT] 承認された");
 
 					// 受け取ったホスト名を保持
 					m_HostName->ChangeText(Msg.string.text);
@@ -200,7 +200,7 @@ Scene* SceneGuest::Update()
 				else
 				{
 					// 拒否されたとき
-					Logger::Info("[ConnectStep::WAIT_ACCEPT] 拒否された");
+					LOG_INFO("[ConnectStep::WAIT_ACCEPT] 拒否された");
 
 					// 切断する
 					Disconnect();
@@ -369,7 +369,7 @@ void SceneGuest::SetName(std::string& Name)
 	else
 	{
 		// 名前の変更
-		Logger::Info("自分の名前を変更：%s → %s", m_Name.c_str(), Name.c_str());
+		LOG_INFO("自分の名前を変更：%s → %s", m_Name.c_str(), Name.c_str());
 
 		m_Name = Name;
 		if (m_ConnectStep == ConnectStep::ON)
@@ -385,21 +385,21 @@ void SceneGuest::SetName(std::string& Name)
 void SceneGuest::TryConnect()
 {
 	// 接続を試みるボタンのコールバック関数
-	Logger::Info("接続を試みるボタン押下");
+	LOG_INFO("接続を試みるボタン押下");
 
 	if (m_ConnectStep == ConnectStep::OFF)
 	{
 		m_NetHandle = ConnectNetWork(m_IP, m_Port);
 		if (m_NetHandle == -1)
 		{
-			Logger::Info("接続失敗");
+			LOG_INFO("接続失敗");
 
 			// 接続失敗したらOFFのまま（一応代入）
 			m_ConnectStep = ConnectStep::OFF;
 		}
 		else
 		{
-			Logger::Info("接続成功");
+			LOG_INFO("接続成功");
 
 			// 接続成功したらまずは名乗る決まりなので
 			// 自分の名前をホストに送信する
@@ -416,7 +416,7 @@ void SceneGuest::TryConnect()
 
 void SceneGuest::Disconnect()
 {
-	Logger::Info("切断：NetHandle = %d", m_NetHandle);
+	LOG_INFO("切断：NetHandle = %d", m_NetHandle);
 
 	if (m_NetHandle != -1)
 		CloseNetWork(m_NetHandle);
@@ -425,7 +425,7 @@ void SceneGuest::Disconnect()
 
 void SceneGuest::RequestAllUpdate()
 {
-	Logger::Info("全更新リクエストボタン押下");
+	LOG_INFO("全更新リクエストボタン押下");
 
 	if (m_ConnectStep == ConnectStep::ON)
 	{
@@ -442,7 +442,7 @@ void SceneGuest::RequestAllUpdate()
 
 void SceneGuest::End()
 {
-	Logger::Info("終了ボタン押下：m_Next = %d", m_Next);
+	LOG_INFO("終了ボタン押下：m_Next = %d", m_Next);
 
 	if (m_Next == nullptr)
 	{

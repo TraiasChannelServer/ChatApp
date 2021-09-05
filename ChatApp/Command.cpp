@@ -110,7 +110,7 @@ void Command::Send(int NetHandle, const Message& Msg)
 {
 	NetWorkSend(NetHandle, &Msg, Command::SIZEOF_MESSAGE);
 
-	Logger::Info("メッセージを送信：NetHandle = %d, Msg = {Type = %s, Single = %d, String = %s}"
+	LOG_INFO("メッセージを送信：NetHandle = %d, Msg = {Type = %s, Single = %d, String = %s}"
 		, NetHandle, Command::TypeToString(Msg.type), Msg.single.num, Msg.string.text);
 }
 
@@ -135,7 +135,7 @@ Command::ReceiveResult Command::CheckReceive(int NetHandle)
 		// メッセージを読み捨てる
 		char Buf[Command::SIZEOF_MESSAGE] = {};
 		NetWorkRecv(NetHandle, &Buf, DataLength);
-		Logger::Warn("固定長より短いメッセージが届いたので捨てる：NetHandle = %d", NetHandle);
+		LOG_WARN("固定長より短いメッセージが届いたので捨てる：NetHandle = %d", NetHandle);
 
 		return ReceiveResult::ABNORMAL;
 	}
@@ -150,7 +150,7 @@ Command::Message Command::Receive(int NetHandle)
 	Command::Message Msg = {};
 	NetWorkRecv(NetHandle, &Msg, Command::SIZEOF_MESSAGE);
 
-	Logger::Info("メッセージを受信：NetHandle = %d, Msg = {Type = %s, Single = %d, String = %s}"
+	LOG_INFO("メッセージを受信：NetHandle = %d, Msg = {Type = %s, Single = %d, String = %s}"
 		, NetHandle, Command::TypeToString(Msg.type), Msg.single.num, Msg.string.text);
 
 	return Msg;
