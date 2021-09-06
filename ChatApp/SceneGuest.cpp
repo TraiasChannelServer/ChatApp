@@ -27,7 +27,6 @@ SceneGuest::SceneGuest()
 	, m_HostName()
 	, m_ConnectingGuest()
 	, m_Chat()
-	, m_ChatText()
 {
 	// コンストラクタでは画面の部品を配置する
 	LOG_INFO("ゲスト画面生成");
@@ -162,16 +161,7 @@ SceneGuest::SceneGuest()
 			// チャット入力枠
 			BoundRect* bound = new BoundRect(XPos, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, XSize, Y_SIZE);
 			auto Callback = new DelegateArg<SceneGuest, std::string>(*this, &SceneGuest::SetChatText);
-			AddBaseComponent(new ScEdit(m_ChatText, EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 64, Callback));
-		}
-		{
-			unsigned int ColorFore = BlackColor;
-			unsigned int ColorBack = GetColor(180, 220, 220);
-			unsigned int ColorFrame = GetColor(50, 100, 100);
-			unsigned int ColorBackHover = GetColor(200, 240, 240);
-			unsigned int ColorBackPress = GetColor(160, 200, 200);
-			auto Callback = new DelegateVoid<SceneGuest>(*this, &SceneGuest::SendChatText);
-			AddBaseComponent(new ScButton("送信", ColorFore, ColorBack, XPos - 50, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, MiddleFont, ColorFrame, ColorBackHover, ColorBackPress, Callback));
+			AddBaseComponent(new ScEdit("", EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 64, Callback));
 		}
 	}
 
@@ -522,23 +512,19 @@ void SceneGuest::RequestAllUpdate()
 void SceneGuest::SetChatText(std::string& Text)
 {
 	// チャットテキストが入力されたときのコールバック関数
-	m_ChatText = Text;
-}
-
-void SceneGuest::SendChatText()
-{
-	LOG_INFO("送信ボタン押下");
 
 	if (m_ConnectStep == ConnectStep::ON)
 	{
-		Command::Message msgSend = Command::MakeChatText(m_NetHandle, m_ChatText);
+		LOG_INFO("チャットを送信する");
+
+		// ホストにチャットを送信
+		Command::Message msgSend = Command::MakeChatText(m_NetHandle, Text);
 		Command::Send(m_NetHandle, msgSend);
 
 		// ホストがチャットの反映を送り返してくるのでここではチャットに追加しない
-	}
-	else
-	{
-		LOG_INFO("接続していないので実行しない");
+
+		// チャット欄を空にする
+		Text = "";
 	}
 }
 

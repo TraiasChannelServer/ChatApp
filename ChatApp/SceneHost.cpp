@@ -33,7 +33,6 @@ SceneHost::SceneHost()
 	, m_RequestNameTimeStart()
 	, m_AcceptedGuest()
 	, m_Chat()
-	, m_ChatText()
 {
 	// コンストラクタでは画面の部品を配置する
 	LOG_INFO("ホスト画面生成");
@@ -153,16 +152,7 @@ SceneHost::SceneHost()
 			// チャット入力枠
 			BoundRect* bound = new BoundRect(XPos, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, XSize, Y_SIZE);
 			auto Callback = new DelegateArg<SceneHost, std::string>(*this, &SceneHost::SetChatText);
-			AddBaseComponent(new ScEdit(m_ChatText, EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 64, Callback));
-		}
-		{
-			unsigned int ColorFore = BlackColor;
-			unsigned int ColorBack = GetColor(180, 220, 220);
-			unsigned int ColorFrame = GetColor(50, 100, 100);
-			unsigned int ColorBackHover = GetColor(200, 240, 240);
-			unsigned int ColorBackPress = GetColor(160, 200, 200);
-			auto Callback = new DelegateVoid<SceneHost>(*this, &SceneHost::SendChatText);
-			AddBaseComponent(new ScButton("送信", ColorFore, ColorBack, XPos - 50, Common::WINDOW_Y_SIZE - Y_STEP_MIDDLE, MiddleFont, ColorFrame, ColorBackHover, ColorBackPress, Callback));
+			AddBaseComponent(new ScEdit("", EditColorFore, EditColorBack, bound, SmallFont, EditColorFrame, 64, Callback));
 		}
 	}
 
@@ -614,20 +604,17 @@ void SceneHost::RejectGuest()
 void SceneHost::SetChatText(std::string& Text)
 {
 	// チャットテキストが入力されたときのコールバック関数
-	m_ChatText = Text;
-}
 
-void SceneHost::SendChatText()
-{
-	LOG_INFO("送信ボタン押下");
-
+	// 接続しているゲストが居ればチャットを送信する
 	if (m_AcceptedGuest->GetItem().size() > 0)
 	{
+		LOG_INFO("チャットを送信する");
+
 		// チャットを追加
-		m_Chat->AddLine(-1, m_Name, m_ChatText);
+		m_Chat->AddLine(-1, m_Name, Text);
 
 		// 全承認済みゲストにホストがチャットを打ったことを知らせる
-		Command::Message msgSend = Command::MakeChatText(-1, m_ChatText);
+		Command::Message msgSend = Command::MakeChatText(-1, Text);
 		auto& list = m_AcceptedGuest->GetItem();
 		for (auto& pair : list)
 		{
@@ -635,10 +622,9 @@ void SceneHost::SendChatText()
 			LOG_INFO("ID = %d, Name = %s", ID, pair.second.Text.c_str());
 			Command::Send(ID, msgSend);
 		}
-	}
-	else
-	{
-		LOG_INFO("承認済みゲストが一人もいないので実行しない");
+
+		// チャット欄を空にする
+		Text = "";
 	}
 }
 

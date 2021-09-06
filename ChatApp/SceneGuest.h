@@ -44,7 +44,6 @@ private:
 	void Disconnect();
 	void RequestAllUpdate();
 	void SetChatText(std::string& Text);
-	void SendChatText();
 	void End();
 
 	void SetConnectStep(ConnectStep Step);
@@ -73,5 +72,4 @@ private:
 	ScList* m_ConnectingGuest;
 
 	ScChat* m_Chat;
-	std::string m_ChatText;
 };

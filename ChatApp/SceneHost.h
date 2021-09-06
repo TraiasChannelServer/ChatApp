@@ -55,7 +55,6 @@ private:
 	void RejectGuest();
 	void Disconnect();
 	void SetChatText(std::string& Text);
-	void SendChatText();
 	void End();
 
 	void SetAcceptGuestStep(AcceptGuestStep Step);
@@ -85,5 +84,4 @@ private:
 	ScList* m_AcceptedGuest;
 
 	ScChat* m_Chat;
-	std::string m_ChatText;
 };
